@@ -1,9 +1,8 @@
-<?php  // check_auth.php -> Vérifier si l'utilisateur est connecté et retourner son ID  
+<?php  // check_auth.php -> Vérifier si l'utilisateur est connecté et retourner son ID
 
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => 'localhost',
     'secure' => false,
     'httponly' => true,
     'samesite' => 'Lax'
@@ -26,3 +25,4 @@ echo json_encode([
     "logged_in" => isset($_SESSION["user_id"]),
     "user_id" => $_SESSION["user_id"] ?? null
 ]);
+

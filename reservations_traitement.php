@@ -3,7 +3,6 @@
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => 'localhost',
     'secure' => false,
     'httponly' => true,
     'samesite' => 'Lax'
@@ -175,3 +174,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response["message"] = "Méthode non autorisée";
 }
 echo json_encode($response);
+

@@ -162,3 +162,4 @@ if ($mailSent) {
 
     respond(true, "Message reçu (email en cours de traitement) !", 202);   // 202 = Accepted, Requête acceptée mais pas encore traitée
 }
+

@@ -3,7 +3,6 @@
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => 'localhost',
     'secure' => false,      // true si HTTPS
     'httponly' => true,
     'samesite' => 'Lax'    // 🔥 ou 'None' si cross-origin strict
@@ -14,7 +13,7 @@ session_start();
 error_reporting(0);
 ini_set('display_errors', 0);
 
-$user_id = isset($_SESSION["user_id"]) ? $_SESSION["user_id"] : null;
+$user_id = $_SESSION["user_id"] ?? null;
 
 header("Access-Control-Allow-Origin: http://localhost/appli_golf");
 header("Access-Control-Allow-Credentials: true");
@@ -89,3 +88,4 @@ if ($user && password_verify($password, $user["password"])) {
 
 $stmt->close();
 $conn->close();
+
