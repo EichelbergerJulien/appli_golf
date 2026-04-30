@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservation - Club de Golf</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header>
+            <h1>Réservation d'un créneau</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Accueil</a></li>
+                    <li><a href="galerie.html">Galerie</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="reservations.html">Réservation(s)</a></li>
+                    <li><a href="mini_jeu.html">Mini-jeu</a></li>
+                </ul>
+
+                <div id="auth_section"></div>    
+                
+            </nav>
+        </header>
+
+        <div class="image">
+            <img src="images/img22.jpg" width="1160" height="200" alt="Description de l'image 22">
+        </div>  
+
+        <section class="reservations-form">
+
+            <div id="popup_message" class="popup-message"></div>
+
+            <h2> 📅 Réserver un ou plusieurs créneau(x)</h2>
+
+            <form id="reservations_form">
+                <label for="nom">Nom :</label>
+                <input type="text" id="nom" name="nom" placeholder="Nom" required value="test">
+
+                <label for="prenom">Prénom :</label>
+                <input type="text" id="prenom" name="prenom" placeholder="Prénom" required value="test">
+
+                <label for="email">Email :</label>
+                <input type="email" id="email" name="email" placeholder="Email" required value="test@gamil.com">
+
+                <label for="date_reservation">Date :</label>
+                <input type="date" id="date_reservation" name="date_reservation" required value="2024-06-30">
+
+                <label for="heure">Heure :</label>
+                <input type="time" id="heure" name="heure" required value="14:00">
+
+                <label for="joueurs">Nombre de joueurs :</label>
+                <select id="joueurs" name="joueurs" required>
+                    <option value="" disabled selected>Nombre de joueurs</option>
+                    <option value="1">1 joueur</option>
+                    <option value="2">2 joueurs</option>
+                    <option value="3">3 joueurs</option>
+                    <option value="4">4 joueurs</option>
+                </select>
+
+                <button type="submit">Réserver</button>
+
+            </form>
+        </section>
+
+        <section class="reservations-confirmees">
+            <h2> 📅 Réservation(s) Confirmée(s)</h2>
+                <table id="reservations_table" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>Date</th>
+                            <th>Heure</th>
+                            <th>Joueurs</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody><!-- Les réservations confirmées seront affichées ici --></tbody>
+
+                </table>
+        </section>
+
+        <footer class="text-center mt-5">
+            <p>&copy; 2026 Club de Golf de Chérisey</p>
+        </footer>
+
+    </div>
+
+    <script src="app.js" defer></script>
+
+</body>
+
+</html>
