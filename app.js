@@ -19,10 +19,10 @@ function isValidEmail(email) {
 
 function escapeHTML(str) {
 
-    console.log("Échappement de :", str); // Débug pour vérifier les données avant échappement
-    str = String(str); // S'assure que c'est une chaîne de caractères
-    return str.replace(/[&<>"']/g, m => ({  // Cette fonction est utilisée pour échapper les caractères spéciaux dans les données affichées,
-        // afin d'éviter les problèmes de sécurité liés à l'injection de code HTML ou JavaScript.
+    console.log("Échappement de :", str);     // Débug pour vérifier les données avant échappement
+    str = String(str);     // S'assure que c'est une chaîne de caractères
+    return str.replace(/[&<>"']/g, m => ({      // Cette fonction est utilisée pour échapper les caractères spéciaux dans les données affichées,
+                                                // afin d'éviter les problèmes de sécurité liés à l'injection de code HTML ou JavaScript.
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
