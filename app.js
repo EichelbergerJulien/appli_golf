@@ -19,8 +19,8 @@ function isValidEmail(email) {
 
 function escapeHTML(str) {
 
-    console.log("Échappement de :", str);     // Débug pour vérifier les données avant échappement
-    str = String(str);     // S'assure que c'est une chaîne de caractères
+    console.log("Échappement de :", str);       // Débug pour vérifier les données avant échappement
+    str = String(str);                          // S'assure que c'est une chaîne de caractères
     return str.replace(/[&<>"']/g, m => ({      // Cette fonction est utilisée pour échapper les caractères spéciaux dans les données affichées,
                                                 // afin d'éviter les problèmes de sécurité liés à l'injection de code HTML ou JavaScript.
         "&": "&amp;",
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (authSection && data.logged_in) {
             authSection.innerHTML = `
                 <ul>
-                    <li><span>👤 Connecté</span></li>
+                    <li><span>👀 Connecté</span></li>
                     <li><a href="#" id="logoutBtn">Se déconnecter</a></li>
                 </ul>
             `;
@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (contactForm) {
         contactForm.addEventListener("submit", async function (e) {
-            e.preventDefault();   // Toujours bloquer le submit pour faire les vérifications avant
+            e.preventDefault();      // Toujours bloquer le submit pour faire les vérifications avant
 
             const email = contactForm.querySelector("#email").value.trim();
 
@@ -555,7 +555,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 showPopup(data.message, !data.success);
 
                 if (data.success) {
-                    window.location.href = "reservations.html";
+                    window.location.href = data.redirect || "reservations.html";
                 }
 
             } catch (err) {
@@ -564,7 +564,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
     }
-
 
 });
 
