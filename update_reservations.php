@@ -72,7 +72,7 @@ if (!$email) {  // Vérifie si l'email est valide après avoir été filtré ave
 
 $stmt = $conn->prepare("UPDATE reservations   
     SET nom=?, prenom=?, email=?, date_reservation=?, heure=?, joueurs=? 
-    WHERE id=? AND user_id =?");     // Prépare une requête SQL pour mettre à jour une réservation existante 
+    WHERE id=?");     // Prépare une requête SQL pour mettre à jour une réservation existante 
                                      // en utilisant des paramètres liés pour éviter les injections SQL.
 
 if (!$stmt) {  // Vérifie si la préparation de la requête SQL a échoué
@@ -84,7 +84,7 @@ if (!$stmt) {  // Vérifie si la préparation de la requête SQL a échoué
     exit;  // Termine le script si la préparation de la requête SQL a échoué
 }
 
-$stmt->bind_param("sssssii", $nom, $prenom, $email, $date, $heure, $joueurs, $id, $_SESSION["user_id"]);  // Lie les paramètres à la requête préparée.
+$stmt->bind_param("sssssii", $nom, $prenom, $email, $date, $heure, $joueurs, $id);  // Lie les paramètres à la requête préparée.
                                                                                         // Les types de données sont spécifiés dans la chaîne "sssssii"
 
 if ($stmt->execute()) {  // Exécute la requête SQL préparée et vérifie si elle a réussi

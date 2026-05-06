@@ -1,16 +1,43 @@
 
 // utils
 
+let popupTimer = null;
+
+function hidePopup() {
+    const popup = document.getElementById("popup_message");
+    if (!popup) return;
+    popup.classList.remove("visible");
+    popup.classList.remove("success");
+    popup.classList.remove("error");
+    if (popupTimer) {
+        clearTimeout(popupTimer);
+        popupTimer = null;
+    }
+    setTimeout(() => {
+        popup.style.display = "none";
+    }, 300); // laisser le temps de la transition
+}
+
 function showPopup(message, isError = false) {                // Function POP-POP pour afficher les messages de succès ou d'erreur
     const popup = document.getElementById("popup_message");
+    if (!popup) {
+        alert(message);
+        return;
+    }
 
     popup.textContent = message;
     popup.style.display = "block";
-    popup.style.backgroundColor = isError ? "red" : "green";
+    popup.classList.remove("success", "error");
+    popup.classList.add(isError ? "error" : "success");
+    popup.classList.add("visible");
 
-    setTimeout(() => {
-        popup.style.display = "none";
-    }, 3000);
+    if (popupTimer) {
+        clearTimeout(popupTimer);
+    }
+
+    popupTimer = setTimeout(() => {
+        hidePopup();
+    }, 4000);
 }
 
 function isValidEmail(email) {
@@ -122,7 +149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // FETCH GET_RESERVATIONS pour afficher les réservations confirmées dans ma table
 
-    fetch("http://localhost/appli_golf/get_reservations.php")
+    fetch("http://localhost/appli_golf/get_reservations.php", { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
 
@@ -547,10 +574,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 console.log("STATUS:", res.status);
 
-                const text = await res.text();    // 👈 on récupère brut
+                const text = await res.text();    // on récupère brut
                 console.log("RESPONSE:", text);
 
-                const data = JSON.parse(text);    // 👈 conversion manuelle
+                const data = JSON.parse(text);    // conversion manuelle
 
                 showPopup(data.message, !data.success);
 

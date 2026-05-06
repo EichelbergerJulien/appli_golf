@@ -99,15 +99,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {  // Vérifie que la requête est de
         exit;  // Termine le script si la préparation de la requête SQL a échoué
     }
 
-    $check->bind_param("ss", $date, $heure);  // Lie les paramètres de la requête SQL préparée avec les variables $date et $heure. 
-                                            // "ss" indique que les deux paramètres sont des chaînes de caractères (string) 
-                                            // pour éviter les injections SQL et s'assurer que les données sont correctement formatées pour la requête SQL
+    $check->bind_param("ss", $date, $heure);  // Lie les paramètres de la requête SQL préparée avec les variables $date et $heure.
+    if (!$check->execute()) {
+        $response["message"] = "Erreur SQL check";
+        echo json_encode($response);
+        exit;
+    }
 
-    $check->bind_result($total);  // Lie le résultat de la requête SQL à la variable $total, qui contiendra le nombre de réservations existantes pour le créneau spécifié. 
-                            // Cela permet de vérifier si le créneau est déjà réservé en vérifiant la valeur de $total après l'exécution de la requête SQL
-    $check->fetch();  // Exécute la requête SQL et récupère le résultat lié à $total. 
-                // Après cette ligne, $total contiendra le nombre de réservations existantes pour le créneau spécifié, 
-                // ce qui permet de vérifier si le créneau est déjà réservé
+    $check->bind_result($total);  // Lie le résultat de la requête SQL à la variable $total
+    $check->fetch();  // Exécécute la requête SQL et récupère le résultat
 
     if ($total > 0) {  // Vérifie si le nombre de réservations existantes pour le créneau spécifié est supérieur à 0. 
                     // Si c'est le cas, cela signifie que le créneau est déjà réservé, et une réponse JSON est envoyée au client avec 
@@ -121,32 +121,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {  // Vérifie que la requête est de
 
     // INSERT requete SQL dans la BDD
 
-    $stmt = $conn->prepare("INSERT INTO reservations (nom, prenom, email, date_reservation, heure, joueurs, user_id) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)");   // Prépare une requête SQL pour insérer une nouvelle réservation dans la base de données
-                                          //en utilisant des paramètres liés pour éviter les injections SQL.
+    $stmt = $conn->prepare("INSERT INTO reservations (nom, prenom, email, date_reservation, heure, joueurs) 
+        VALUES (?, ?, ?, ?, ?, ?)");
 
-    if (!$stmt) {  // Vérifie si la préparation de la requête SQL a échoué. Si c'est le cas, 
-                    // une réponse JSON est envoyée au client avec un message d'erreur indiquant 
-                    // qu'il y a eu une erreur lors de la préparation de la requête SQL, et le script est terminé.
+    if (!$stmt) {
         $response["message"] = "Erreur SQL prepare";
         echo json_encode($response);
         exit;
     }
 
-    $user_id = $_SESSION["user_id"];  // Récupère l'ID de l'utilisateur à partir de la session pour l'associer à la réservation. 
-                                    // Cela permet de lier la réservation à l'utilisateur qui l'a créée, 
-                                    // ce qui est important pour la gestion des réservations et la sécurité.
-
-    $stmt->bind_param("sssssii", $nom, $prenom, $email, $date, $heure, $joueurs, $user_id);  // Lie les paramètres de la requête SQL préparée avec les variables correspondantes. 
-                                            // "sssssii" indique que les six premiers paramètres sont des chaînes de caractères (string) et le dernier est un entier (integer) 
-                                            // pour éviter les injections SQL et s'assurer que les données sont correctement formatées pour la requête SQL
+    $stmt->bind_param("sssssi", $nom, $prenom, $email, $date, $heure, $joueurs);
 
     if ($stmt->execute()) {
 
-        $response["success"] = true; // Met à jour la clé "success" de la réponse pour indiquer que l'opération a réussi
-        $response["id"] = $conn->insert_id;  // Retourner l'ID de la réservation créée
-        $response["message"] = "Réservation enregistrée et email en cours d'envoi";  // Met à jour le message de réponse pour indiquer que la réservation a été enregistrée 
-                                                                                     // et que l'email de confirmation est en cours d'envoi
+        $response["success"] = true;
+        $response["id"] = $conn->insert_id;
+        $response["message"] = "Réservation enregistrée";
 
         try {
             $mail = new PHPMailer(true);  // Crée une nouvelle instance de PHPMailer pour envoyer un email de confirmation de réservation. 

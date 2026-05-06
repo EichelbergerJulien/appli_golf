@@ -75,10 +75,9 @@ $reservation_id = (int)$data["id"];  // Convertit l'ID de la réservation en ent
 try {
     // Préparation requête sécurisée
 
-    $stmt = $pdo->prepare("DELETE FROM reservations WHERE id=? AND user_id =?");  // Prépare une requête SQL de suppression pour supprimer une réservation de la table "reservations" 
-                                                            // en fonction de l'ID de la réservation et de l'ID de l'utilisateur (pour s'assurer que les utilisateurs ne peuvent supprimer que leurs propres réservations)
-    $stmt->execute([$reservation_id, $_SESSION["user_id"]]);  // Exécute la requête préparée en passant l'ID de la réservation à supprimer et l'ID de l'utilisateur connecté (obtenu à partir de la session) 
-                                                            // pour s'assurer que seule la réservation appartenant à cet utilisateur sera supprimée
+    $stmt = $pdo->prepare("DELETE FROM reservations WHERE id=?");  // Prépare une requête SQL de suppression pour supprimer une réservation de la table "reservations" 
+                                                            // en fonction de l'ID de la réservation
+    $stmt->execute([$reservation_id]);  // Exécute la requête préparée en passant l'ID de la réservation à supprimer
 
     if ($stmt->rowCount() > 0) {  // Vérifie si la requête de suppression a affecté au moins une ligne, ce qui signifie qu'une réservation a été supprimée avec succès
         echo json_encode([  // Envoie une réponse JSON indiquant que la réservation a été supprimée avec succès

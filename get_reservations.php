@@ -28,20 +28,26 @@ if ($conn->connect_error) {  // Vérifie si la connexion à la base de données 
 
 // Requête SQL pour récupérer les réservations
 
-$sql = "SELECT id, nom, prenom, email, date_reservation, heure, joueurs FROM reservations";  // Requête SQL pour sélectionner les champs id, nom, prenom, email, date_reservation, 
-                                                                                             // heure et joueurs de la table "reservations"
-$result = $conn->query($sql);  // Exécute la requête SQL et stocke le résultat dans la variable $result. 
-                               // $result est un objet mysqli_result qui contient les données retournées par la requête SQL.
+$stmt = $conn->prepare("SELECT id, nom, prenom, email, date_reservation, heure, joueurs FROM reservations");
+if ($stmt) {
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-$reservations = [];  // Initialise un tableau vide pour stocker les réservations récupérées de la base de données.
+    $reservations = [];
 
-if ($result) {  // Vérifie si la requête SQL a été exécutée avec succès et que $result contient des données
-    while ($row = $result->fetch_assoc()) {  // Parcourt chaque ligne du résultat de la requête SQL en utilisant fetch_assoc() 
-                                             // pour récupérer les données sous forme de tableau associatif.
-
-        $reservations[] = $row;  // Ajoute chaque ligne de données (chaque réservation) au tableau $reservations. 
-                                 // Chaque élément de $reservations est un tableau associatif contenant les champs de la réservation.
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $reservations[] = $row;
+        }
     }
+    $stmt->close();
+} else {
+    echo json_encode([
+        "success" => false,
+        "message" => "Erreur SQL"
+    ]);
+    $conn->close();
+    exit;
 }
 
 // Retour JSON propre

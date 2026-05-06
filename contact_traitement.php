@@ -63,66 +63,88 @@ if (empty($nom) || empty($prenom) || empty($message) || empty($email) || empty($
     respond(false, "Veuillez remplir tous les champs correctement", 400);       // 400 = Bad Request, Requête incorrecte (erreur côté utilisateur)
 }
 
-// PHPMailer - Envoyer directement l'email sans passer par la base
+// PHPMailer - Sauvegarde en base et envoi de l'email
 
-$mailSent = false;         // Initialise une variable pour suivre si l'email a été envoyé avec succès
-try {  // Essaye d'envoyer un email de notification avec les détails du message de contact, et gère les erreurs potentielles
-    $mail = new PHPMailer(true);   // Crée une nouvelle instance de PHPMailer avec la gestion des exceptions activée
-    $mailSent = false;         // Initialise une variable pour suivre si l'email a été envoyé avec succès
+$conn = new mysqli("localhost", "root", "", "golf_connect");
+if ($conn->connect_error) {
+    respond(false, "Erreur connexion BDD", 500);
+}
 
-    //  Vérification des variables d’environnement AVANT config SMTP
+$stmt = $conn->prepare("INSERT INTO contact (nom, prenom, email, telephone, message) VALUES (?, ?, ?, ?, ?)");
+if (!$stmt) {
+    error_log("Contact insert prepare error: " . $conn->error);
+    respond(false, "Erreur base de données", 500);
+}
+$stmt->bind_param("sssss", $nom, $prenom, $email, $tel, $message);
+if (!$stmt->execute()) {
+    error_log("Contact insert execute error: " . $stmt->error);
+    respond(false, "Erreur base de données", 500);
+}
+$stmt->close();
 
-    $smtpUser = "julien.e@me.com";  //  Utilisateur SMTP
-    $smtpPass = "2145";    //  Mot de passe d'application Gmail
+$mailSent = false;
+try {
+    $mail = new PHPMailer(true);
 
-    $mail->isSMTP();   // Configure PHPMailer pour utiliser SMTP pour l'envoi d'emails, ce qui est nécessaire pour envoyer des emails via un serveur SMTP comme Gmail
-    $mail->Host = 'smtp.gmail.com';  // Spécifie le serveur SMTP de Gmail pour l'envoi des emails
-    $mail->CharSet = 'UTF-8';  // Définit l'encodage des caractères de l'email à UTF-8 pour assurer la compatibilité avec les caractères spéciaux et les accents dans le contenu de l'email
-    $mail->SMTPAuth = true;  // Active l'authentification SMTP, ce qui est nécessaire pour se connecter au serveur SMTP de Gmail avec un nom d'utilisateur et un mot de passe
-    $mail->Username =  $smtpUser;  // Récupère le nom d'utilisateur SMTP à partir de la variable d'environnement    
+    // Configuration SMTP - À adapter selon votre serveur
+    $smtpUser = "julien.eichel02@gmail.com";  // Votre adresse email 
+    $smtpPass = "abcd efgh ijkl mnop";          // Mot de passe d'application pour le mail
+    $recipient = "julien.e@me.com"; // Adresse de réception des messages
+
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';     // Serveur SMTP Gmail
+    $mail->CharSet = 'UTF-8';
+    $mail->SMTPAuth = true;
+    $mail->Username = $smtpUser;
     $mail->Password = $smtpPass;
+    $mail->SMTPSecure = 'tls';
+    $mail->Port = 587;
+    $mail->SMTPDebug = 0;
+    $mail->Debugoutput = function($str, $level) {
+        error_log("PHPMailer debug [".$level."]: " . $str);
+    };
+    $mail->Timeout = 15;   // Augmenté à 15 secondes
 
-    $mail->SMTPSecure = 'tls';  // Utilise TLS pour sécuriser la connexion au serveur SMTP de Gmail, ce qui est recommandé pour la sécurité de l'envoi d'emails
-    $mail->Port = 587;    // Spécifie le port SMTP de Gmail pour TLS (587) pour l'envoi des emails
-
-    $mail->setFrom($smtpUser, 'Contact Golf');
-    $mail->addAddress($email);  // Envoie l'email DIRECTEMENT à l'adresse fournie dans le formulaire
-    $mail->addReplyTo($smtpUser, 'Support Golf');
-
-    $mail->Subject = "Merci pour votre message de contact";  // Sujet de l'email envoyé au contact
-    $mail->isHTML(true);  // Indique que le corps de l'email est au format HTML, ce qui permet d'inclure des balises HTML pour formater le contenu de l'email de manière plus attrayante et lisible
-    $mail->Timeout = 10;    // Définit un délai d'attente de 10 secondes pour la connexion au serveur SMTP et l'envoi de l'email, ce qui permet d'éviter que le script ne reste bloqué indéfiniment en cas de problème de connexion ou de serveur lent
-
-
-    $nomSafe = htmlspecialchars($nom, ENT_QUOTES, 'UTF-8');  // Sécurise les données pour l'affichage dans l'email en convertissant les caractères spéciaux en entités HTML, 
-                                                             // et en préservant les sauts de ligne dans le message
+    $nomSafe = htmlspecialchars($nom, ENT_QUOTES, 'UTF-8');
     $prenomSafe = htmlspecialchars($prenom, ENT_QUOTES, 'UTF-8');
     $emailSafe = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
     $telSafe = htmlspecialchars($tel, ENT_QUOTES, 'UTF-8');
     $messageSafe = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
 
+    $mail->setFrom($smtpUser, 'Club de Golf de Chérisey');
+    $mail->addAddress($recipient, 'Club de Golf de Chérisey');
+    $mail->addAddress($email, "$prenomSafe $nomSafe");
+    $mail->addReplyTo($smtpUser, 'Club de Golf de Chérisey');
+    $mail->Subject = "Nouveau message depuis le formulaire de contact";
+    $mail->isHTML(true);
+    $mail->Timeout = 10;
+
     $mail->Body = "
-                        <h2>Nouveau message de contact</h2>
-                        <p><strong>Nom :</strong> $nomSafe</p>
-                        <p><strong>Prénom :</strong> $prenomSafe</p>
-                        <p><strong>Email :</strong> $emailSafe</p>
-                        <p><strong>Téléphone :</strong> $telSafe</p>
-                        <p><strong>Message :</strong><br>$messageSafe</p>
-                        ";  // Corps de l'email de notification formaté en HTML pour inclure les détails du message de contact de manière claire et lisible, 
-                            // avec des balises HTML pour la mise en forme
+        <h2>Nouveau message de contact</h2>
+        <p><strong>Nom :</strong> $nomSafe</p>
+        <p><strong>Prénom :</strong> $prenomSafe</p>
+        <p><strong>Email :</strong> $emailSafe</p>
+        <p><strong>Téléphone :</strong> $telSafe</p>
+        <p><strong>Message :</strong><br>$messageSafe</p>
+    ";
+    $mail->AltBody = "Nom: $nomSafe\nPrénom: $prenomSafe\nEmail: $emailSafe\nTéléphone: $telSafe\nMessage:\n$messageSafe";
 
-    $mail->AltBody = "Nom: $nomSafe\nPrénom: $prenomSafe\nEmail: $emailSafe\nTéléphone: $telSafe\nMessage:\n$messageSafe";  // Corps alternatif de l'email pour les clients de messagerie 
-                                                                                // qui ne supportent pas le HTML, formaté en texte brut avec des sauts de ligne pour la lisibilité
-
-    $mail->send();  // Tente d'envoyer l'email et si cela réussit, marque $mailSent comme true
-    $mailSent = true;  // Si l'envoi de l'email réussit, la variable $mailSent est définie sur true pour indiquer que l'email a été envoyé avec succès
+    $mail->send();
+    $mailSent = true;
 } catch (Exception $e) {
     $errorMsg = $mail->ErrorInfo ?? $e->getMessage();
-    error_log("Mail error: " . $errorMsg);
-    respond(false, "Erreur SMTP: " . $errorMsg, 500);
+    error_log("Mail error details: " . $errorMsg);
+    error_log("SMTP Host: " . $mail->Host);
+    error_log("SMTP Port: " . $mail->Port);
+    error_log("SMTP User: " . $mail->Username);
+    error_log("Mail recipient: " . $recipient);
+    error_log("Contact email: " . $email);
 }
 
-if ($mailSent) {  // Si l'email a été envoyé avec succès, répond avec un message de succès
-    respond(true, "Message envoyé avec succès !", 200);    // 200 =  OK, Succès HTTP
-}
+$conn->close();
 
+if ($mailSent) {
+    respond(true, "Message envoyé et enregistré en base de données.", 200);
+}
+// Le message est en BDD même si le mail a échoué - c'est un succès partiel
+respond(true, "Message enregistré en base de données. Mail: échec SMTP (vérifiez les identifiants et les logs).", 200);
