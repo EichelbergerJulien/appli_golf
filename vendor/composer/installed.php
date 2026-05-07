@@ -1,28 +1,28 @@
 <?php return array(
     'root' => array(
-        'name' => '__root__',
+        'name' => 'golf/appli_golf',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '29109a4858c1147896c23eacae218503d6e7e56a',
+        'reference' => '0c01ff3a13873fffcd919631d0e90b2123b52373',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
-        '__root__' => array(
+        'golf/appli_golf' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '29109a4858c1147896c23eacae218503d6e7e56a',
+            'reference' => '0c01ff3a13873fffcd919631d0e90b2123b52373',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
         'phpmailer/phpmailer' => array(
-            'pretty_version' => 'v7.0.2',
-            'version' => '7.0.2.0',
-            'reference' => 'ebf1655bd5b99b3f97e1a3ec0a69e5f4cd7ea088',
+            'pretty_version' => 'v6.12.0',
+            'version' => '6.12.0.0',
+            'reference' => 'd1ac35d784bf9f5e61b424901d5a014967f15b12',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
             'aliases' => array(),

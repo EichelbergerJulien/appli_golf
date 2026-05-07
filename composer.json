@@ -1,7 +1,7 @@
 {
+    "name": "golf/appli_golf",
+    "description": "Application de réservation de golf",
     "require": {
-        "phpmailer/phpmailer": "^7.0",
-      "ext-json": "*"
+        "phpmailer/phpmailer": "^6.5"
     }
 }
-

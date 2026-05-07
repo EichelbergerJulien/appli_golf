@@ -8,6 +8,18 @@ use PHPMailer\PHPMailer\Exception;  // Importation des classes PHPMailer
 
 require 'vendor/autoload.php';
 
+// Charger les variables d'environnement depuis le fichier .env
+$envFile = __DIR__ . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
+            list($key, $value) = explode('=', $line, 2);
+            putenv(trim($key) . '=' . trim($value));
+        }
+    }
+}
+
 header('Content-Type: application/json; charset=UTF-8');  // Définit le type de contenu et l'encodage pour éviter les problèmes d'affichage des caractères spéciaux
 
 //  function respond()
@@ -63,6 +75,16 @@ if (empty($nom) || empty($prenom) || empty($message) || empty($email) || empty($
     respond(false, "Veuillez remplir tous les champs correctement", 400);       // 400 = Bad Request, Requête incorrecte (erreur côté utilisateur)
 }
 
+// Récupérer le destinataire depuis .env
+$recipient = getEnvOrFail('SMTP_RECIPIENT');
+
+// Sécurisation des données pour l'email
+$nomSafe = htmlspecialchars($nom, ENT_QUOTES, 'UTF-8');
+$prenomSafe = htmlspecialchars($prenom, ENT_QUOTES, 'UTF-8');
+$emailSafe = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+$telSafe = htmlspecialchars($tel, ENT_QUOTES, 'UTF-8');
+$messageSafe = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+
 // PHPMailer - Sauvegarde en base et envoi de l'email
 
 $conn = new mysqli("localhost", "root", "", "golf_connect");
@@ -83,42 +105,31 @@ if (!$stmt->execute()) {
 $stmt->close();
 
 $mailSent = false;
+
 try {
     $mail = new PHPMailer(true);
-
-    // Configuration SMTP - À adapter selon votre serveur
-    $smtpUser = "julien.eichel02@gmail.com";  // Votre adresse email 
-    $smtpPass = "abcd efgh ijkl mnop";          // Mot de passe d'application pour le mail
-    $recipient = "julien.e@me.com"; // Adresse de réception des messages
-
+    
+    // Configuration SMTP - Variables d'environnement sécurisées
+    $smtpUser = getEnvOrFail('SMTP_USER');
+    $smtpPass = getEnvOrFail('SMTP_PASS');
+    $recipient = getEnvOrFail('SMTP_RECIPIENT');
+    
     $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';     // Serveur SMTP Gmail
+    $mail->Host = 'smtp.gmail.com';
     $mail->CharSet = 'UTF-8';
     $mail->SMTPAuth = true;
     $mail->Username = $smtpUser;
     $mail->Password = $smtpPass;
-    $mail->SMTPSecure = 'tls';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
-    $mail->SMTPDebug = 0;
-    $mail->Debugoutput = function($str, $level) {
-        error_log("PHPMailer debug [".$level."]: " . $str);
-    };
-    $mail->Timeout = 15;   // Augmenté à 15 secondes
-
-    $nomSafe = htmlspecialchars($nom, ENT_QUOTES, 'UTF-8');
-    $prenomSafe = htmlspecialchars($prenom, ENT_QUOTES, 'UTF-8');
-    $emailSafe = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
-    $telSafe = htmlspecialchars($tel, ENT_QUOTES, 'UTF-8');
-    $messageSafe = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
-
+    
     $mail->setFrom($smtpUser, 'Club de Golf de Chérisey');
     $mail->addAddress($recipient, 'Club de Golf de Chérisey');
     $mail->addAddress($email, "$prenomSafe $nomSafe");
     $mail->addReplyTo($smtpUser, 'Club de Golf de Chérisey');
     $mail->Subject = "Nouveau message depuis le formulaire de contact";
     $mail->isHTML(true);
-    $mail->Timeout = 10;
-
+    
     $mail->Body = "
         <h2>Nouveau message de contact</h2>
         <p><strong>Nom :</strong> $nomSafe</p>
@@ -128,17 +139,13 @@ try {
         <p><strong>Message :</strong><br>$messageSafe</p>
     ";
     $mail->AltBody = "Nom: $nomSafe\nPrénom: $prenomSafe\nEmail: $emailSafe\nTéléphone: $telSafe\nMessage:\n$messageSafe";
-
+    
     $mail->send();
     $mailSent = true;
+    
 } catch (Exception $e) {
-    $errorMsg = $mail->ErrorInfo ?? $e->getMessage();
-    error_log("Mail error details: " . $errorMsg);
-    error_log("SMTP Host: " . $mail->Host);
-    error_log("SMTP Port: " . $mail->Port);
-    error_log("SMTP User: " . $mail->Username);
-    error_log("Mail recipient: " . $recipient);
-    error_log("Contact email: " . $email);
+    error_log("Mail error: " . $mail->ErrorInfo);
+    error_log("Exception: " . $e->getMessage());
 }
 
 $conn->close();
@@ -146,5 +153,11 @@ $conn->close();
 if ($mailSent) {
     respond(true, "Message envoyé et enregistré en base de données.", 200);
 }
+
 // Le message est en BDD même si le mail a échoué - c'est un succès partiel
+
 respond(true, "Message enregistré en base de données. Mail: échec SMTP (vérifiez les identifiants et les logs).", 200);
+
+
+header("Location: contact.html");
+exit();
