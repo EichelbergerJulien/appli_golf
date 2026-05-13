@@ -11,14 +11,14 @@ class User {
         $this->conn = $db->getConnection();
     }
 
-    public function register($nom, $prenom, $email, $password) {
+    public function register(string $nom, string $prenom, string $email, string $password) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $this->conn->prepare("INSERT INTO users (email, password) VALUES (?, ?)");
         $stmt->bind_param("ssss", $nom, $prenom, $email, $hashedPassword);
         return $stmt->execute();
     }
 
-    public function login($email, $password) {
+    public function login(string $email, string $password) {
         $stmt = $this->conn->prepare("SELECT nom, prenom, password FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -32,7 +32,7 @@ class User {
         return false;
     }
 
-    public function getUserById($id) {
+    public function getUserById(int $id) {
         $stmt = $this->conn->prepare("SELECT id, nom, prenom, email FROM users WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();

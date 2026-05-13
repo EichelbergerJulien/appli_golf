@@ -11,7 +11,7 @@ class Contact {
         $this->conn = $db->getConnection();
     }
 
-    public function create($nom, $prenom, $email, $telephone, $message) {
+    public function create(string $nom, string $prenom, string $email, string $telephone, string $message) {
         $stmt = $this->conn->prepare("INSERT INTO contact (nom, prenom, email, telephone, message) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("sssss", $nom, $prenom, $email, $telephone, $message);
         return $stmt->execute();

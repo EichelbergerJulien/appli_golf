@@ -4,7 +4,7 @@
 require_once __DIR__ . '/../models/Reservation.php';
 
 class ReservationController {
-    private $reservationModel;
+    private Reservation $reservationModel;
 
     public function __construct() {
         $this->reservationModel = new Reservation();

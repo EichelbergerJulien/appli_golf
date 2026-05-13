@@ -11,7 +11,7 @@ class Reservation {
         $this->conn = $db->getConnection();
     }
 
-    public function create($nom, $prenom, $email, $date_reservation, $heure, $joueurs, $user_id) {
+    public function create(string $nom, string $prenom, string $email, int $date_reservation, int $heure, int $joueurs, int $user_id) {
         $stmt = $this->conn->prepare("INSERT INTO reservations (nom, prenom, email, date_reservation, heure, joueurs, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sssssii", $nom, $prenom, $email, $date_reservation, $heure, $joueurs, $user_id);
         if ($stmt->execute()) {
@@ -20,7 +20,7 @@ class Reservation {
         return false;
     }
 
-    public function getByUserId($user_id) {
+    public function getByUserId(int $user_id) {
         $stmt = $this->conn->prepare("SELECT * FROM reservations WHERE user_id = ? ORDER BY date_reservation, heure");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -28,13 +28,13 @@ class Reservation {
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function delete($id, $user_id) {
+    public function delete(int $id, int $user_id) {
         $stmt = $this->conn->prepare("DELETE FROM reservations WHERE id = ? AND user_id = ?");
         $stmt->bind_param("ii", $id, $user_id);
         return $stmt->execute();
     }
 
-    public function update($id, $nom, $prenom, $email, $date_reservation, $heure, $joueurs, $user_id) {
+    public function update(int $id, string $nom, string $prenom, string $email, int $date_reservation, int $heure, int $joueurs, int $user_id) {
         $stmt = $this->conn->prepare("UPDATE reservations SET nom = ?, prenom = ?, email = ?, date_reservation = ?, heure = ?, joueurs = ? WHERE id = ? AND user_id = ?");
         $stmt->bind_param("sssssiii", $nom, $prenom, $email, $date_reservation, $heure, $joueurs, $id, $user_id);
         return $stmt->execute();

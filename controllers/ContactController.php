@@ -8,13 +8,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../models/Contact.php';
 
 class ContactController {
-    private $contactModel;
+    private Contact $contactModel;
 
     public function __construct() {
         $this->contactModel = new Contact();
     }
 
-    private function getEnvOrFail($key) {
+    private function getEnvOrFail(string $key) {
         $value = getenv($key);
         if (!$value) {
             error_log("Missing env: $key");
@@ -23,7 +23,7 @@ class ContactController {
         return $value;
     }
 
-    private function respond($success, $message, $code = 200) {
+    private function respond(bool $success, string $message, $code = 200) {
         http_response_code($code);
         echo json_encode(['success' => $success, 'message' => $message]);
         exit;
@@ -75,7 +75,7 @@ class ContactController {
         }
     }
 
-    private function sendEmail($nom, $prenom, $email, $tel, $message) {
+    private function sendEmail(string $nom, string $prenom, string $email, string $tel, string $message) : bool {
         $messageAlt = str_replace(["\r\n", "\r"], "\n", $message);
         $messageAlt = htmlspecialchars($messageAlt, ENT_QUOTES, 'UTF-8');
 

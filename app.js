@@ -1,7 +1,7 @@
 
 // utils
 
-let popupTimer = null;
+let popupTimer = null;  
 
 function hidePopup() {
     const popup = document.getElementById("popup_message");
