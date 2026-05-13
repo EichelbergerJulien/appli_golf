@@ -1,0 +1,13 @@
+RewriteEngine On
+RewriteBase /appli_golf/
+DirectoryIndex index.php index.html
+
+# Si l'URL pointe sur le dossier lui-même, afficher index.php
+RewriteRule ^$ index.php [L]
+
+# Rediriger toutes les autres requêtes vers index.php si le fichier ou le dossier n'existe pas
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.php [QSA,L]
+
+# Les fichiers statiques (CSS, JS, images) sont servis normalement

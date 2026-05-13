@@ -60,15 +60,19 @@ function escapeHTML(str) {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-    const currentPage = window.location.pathname.split("/").pop() || "index.html";
-    const protectedPages = ["reservations.html"];
-    const isLoginPage = currentPage === "login.html";
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const baseRoute = pathSegments.length > 0 ? '/' + pathSegments[0] : '';
+    const routePath = window.location.pathname.replace(baseRoute, '').replace(/^\/|\/$/g, '');
+    const currentPage = routePath || 'home';
+    const protectedPages = ['reservations'];
+    const isLoginPage = currentPage === 'login';
     const isProtectedPage = protectedPages.includes(currentPage);
+    const apiRoot = baseRoute;
 
     // 🔐 CHECK AUTH à chaque chargement de page pour protéger les pages sensibles
 
     try {
-        const res = await fetch("http://localhost/appli_golf/check_auth.php", {  // Cette requête est envoyée à chaque chargement de page pour vérifier si l'utilisateur est toujours connecté.
+        const res = await fetch(`${apiRoot}/check_auth`, {
             credentials: "include"
         });
 
@@ -77,12 +81,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         // console.log(data);
 
         if (isLoginPage && data.logged_in) {
-            window.location.href = "reservations.html";
+            window.location.href = `${baseRoute}/reservations`;
             return;
         }
 
         if (isProtectedPage && !data.logged_in) {
-            window.location.href = "login.html";
+            window.location.href = `${baseRoute}/login`;
             return;
         }
 
@@ -90,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
         console.error("Erreur auth:", error);
         if (isProtectedPage) {
-            window.location.href = "login.html";  // En cas d'erreur (ex: serveur down), on redirige aussi vers login pour éviter de rester bloqué sur une page qui ne fonctionne pas
+            window.location.href = `${baseRoute}/login`;  // En cas d'erreur (ex: serveur down), on redirige aussi vers login pour éviter de rester bloqué sur une page qui ne fonctionne pas
             return;
         }
     }
@@ -102,7 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const authSection = document.getElementById("auth_section");
 
     try {
-        const res = await fetch("http://localhost/appli_golf/check_auth.php", {  // Cette requête est envoyée à chaque chargement de page pour vérifier si l'utilisateur est toujours connecté.
+        const res = await fetch(`${apiRoot}/check_auth`, {
             credentials: "include"
         });
 
@@ -110,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // 🔒 PROTECTION PAGE
         if (isProtectedPage && !data.logged_in) {
-            window.location.href = "login.html";
+            window.location.href = `${baseRoute}/login`;
             return;
         }
 
@@ -126,19 +130,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("logoutBtn").addEventListener("click", async (e) => {
                 e.preventDefault();
 
-                await fetch("http://localhost/appli_golf/logout.php", {
+                await fetch(`${apiRoot}/logout`, {
                     method: "POST",
                     credentials: "include"
                 });
 
-                window.location.href = "login.html";
+                window.location.href = `${baseRoute}/login`;
             });
         }
 
     } catch (error) {
         console.error("Erreur auth:", error);
         if (isProtectedPage) {
-            window.location.href = "login.html";
+            window.location.href = `${baseRoute}/login`;
             return;
         }
     }
@@ -149,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // FETCH GET_RESERVATIONS pour afficher les réservations confirmées dans ma table
 
-    fetch("http://localhost/appli_golf/get_reservations.php", { credentials: 'include' })
+    fetch(`${apiRoot}/reservations/list`, { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
 
@@ -206,9 +210,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             const formData = new FormData(contactForm);
+            showPopup("Envoi du message en cours...", false);
 
             try {
-                const res = await fetch("http://localhost/appli_golf/contact_traitement.php", {
+                const res = await fetch(`${apiRoot}/contact/send`, {
                     method: "POST",
                     body: formData
                 });
@@ -266,7 +271,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             try {
 
-                const res = await fetch("http://localhost/appli_golf/reservations_traitement.php", {
+                const res = await fetch(`${apiRoot}/reservations/create`, {
                     method: "POST",
                     credentials: 'include',
                     headers: {
@@ -388,7 +393,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (!confirm("Supprimer cette réservation ?")) return;
 
                 try {
-                    const res = await fetch("http://localhost/appli_golf/delete_reservations.php", {
+                    const res = await fetch(`${apiRoot}/reservations/delete`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -447,7 +452,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         let bodyValue = JSON.stringify({ id, nom, prenom, email, date_reservation: date_reservation, heure, joueurs })
                         console.log("Body envoyé :", bodyValue); // Débug pour vérifier les données envoyées au serveur
 
-                        const res = await fetch("http://localhost/appli_golf/update_reservations.php", {
+                        const res = await fetch(`${apiRoot}/reservations/update`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
@@ -563,7 +568,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             try {
-                const res = await fetch("http://localhost/appli_golf/login.php", {
+                const res = await fetch(`${apiRoot}/auth/login`, {
                     method: "POST",
                     credentials: 'include',
                     headers: {
@@ -582,7 +587,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 showPopup(data.message, !data.success);
 
                 if (data.success) {
-                    window.location.href = data.redirect || "reservations.html";
+                    window.location.href = data.redirect || `${baseRoute}/reservations`;
                 }
 
             } catch (err) {
